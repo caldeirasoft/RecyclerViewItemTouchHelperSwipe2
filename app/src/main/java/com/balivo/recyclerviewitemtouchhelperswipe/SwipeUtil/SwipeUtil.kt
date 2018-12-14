@@ -10,10 +10,12 @@ import android.support.v4.app.FragmentActivity
 import android.support.v4.content.ContextCompat
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
+import android.util.Log
 
 import com.balivo.recyclerviewitemtouchhelperswipe.R
 
-abstract class SwipeUtil(dragDirs: Int, swipeDirs: Int, private val context: FragmentActivity?) : ItemTouchHelper.SimpleCallback(dragDirs, swipeDirs) {
+abstract class SwipeUtil(dragDirs: Int, swipeDirs: Int, private val context: FragmentActivity?)
+    : ItemTouchHelper.SimpleCallback(dragDirs, swipeDirs) {
 
     private var background: Drawable? = null
     private var deleteIcon: Drawable? = null
@@ -54,34 +56,44 @@ abstract class SwipeUtil(dragDirs: Int, swipeDirs: Int, private val context: Fra
             init()
         }
 
-        val itemHeight = itemView.bottom - itemView.top
+        Log.d("Swipe onChildDraw", "dx:" + dX + "\tAction State:" + actionState.toString());
 
-        //Setting Swipe Background
-        (background as ColorDrawable).color = leftcolorCode
-        background!!.setBounds(itemView.right + dX.toInt(), itemView.top, itemView.right, itemView.bottom)
-        background!!.draw(c)
+        if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
+            val itemHeight = itemView.bottom - itemView.top
 
-        val intrinsicWidth = deleteIcon!!.intrinsicWidth
-        val intrinsicHeight = deleteIcon!!.intrinsicWidth
+            //Setting Swipe Background
+            (background as ColorDrawable).color = leftcolorCode
+            background!!.setBounds(itemView.right + dX.toInt(), itemView.top, itemView.right, itemView.bottom)
+            background!!.draw(c)
 
-        val xMarkLeft = itemView.right - xMarkMargin - intrinsicWidth
-        val xMarkRight = itemView.right - xMarkMargin
-        val xMarkTop = itemView.top + (itemHeight - intrinsicHeight) / 2
-        val xMarkBottom = xMarkTop + intrinsicHeight
+            val intrinsicWidth = deleteIcon!!.intrinsicWidth
+            val intrinsicHeight = deleteIcon!!.intrinsicWidth
 
-
-        //Setting Swipe Icon
-        deleteIcon!!.setBounds(xMarkLeft, xMarkTop + 16, xMarkRight, xMarkBottom)
-        deleteIcon!!.draw(c)
-
-        //Setting Swipe Text
-        val paint = Paint()
-        paint.color = Color.WHITE
-        paint.textSize = 48f
-        paint.textAlign = Paint.Align.CENTER
-        c.drawText(leftSwipeLable!!, (xMarkLeft + 40).toFloat(), (xMarkTop + 10).toFloat(), paint)
+            val xMarkLeft = itemView.right - xMarkMargin - intrinsicWidth
+            val xMarkRight = itemView.right - xMarkMargin
+            val xMarkTop = itemView.top + (itemHeight - intrinsicHeight) / 2
+            val xMarkBottom = xMarkTop + intrinsicHeight
 
 
-        super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
+            //Setting Swipe Icon
+            deleteIcon!!.setBounds(xMarkLeft, xMarkTop + 16, xMarkRight, xMarkBottom)
+            deleteIcon!!.draw(c)
+
+            //Setting Swipe Text
+            val paint = Paint()
+            paint.color = Color.WHITE
+            paint.textSize = 48f
+            paint.textAlign = Paint.Align.CENTER
+            c.drawText(leftSwipeLable!!, (xMarkLeft + 40).toFloat(), (xMarkTop + 10).toFloat(), paint)
+            super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
+        }
+        else {
+
+            super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
+        }
+    }
+
+    override fun getSwipeThreshold(viewHolder: RecyclerView.ViewHolder?): Float {
+        return 0.7f
     }
 }

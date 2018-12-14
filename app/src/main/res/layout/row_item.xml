@@ -1,12 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    android:clickable="true"
+    android:focusable="true"
+    app:cardElevation="0dp">
 
-    <!-- Swipe Layout-->
-    <include layout="@layout/swipe_row_item" />
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-    <!-- Regular Layout-->
-    <include layout="@layout/regular_row_item" />
+        <!-- Swipe Layout-->
+        <include layout="@layout/swipe_row_item" />
 
-</FrameLayout>
+        <!-- Regular Layout-->
+        <include layout="@layout/regular_row_item" />
+
+    </FrameLayout>
+
+</android.support.v7.widget.CardView>

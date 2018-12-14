@@ -12,8 +12,13 @@ import android.view.ViewGroup
 
 import com.balivo.recyclerviewitemtouchhelperswipe.Adapter.RVAdapter
 import com.balivo.recyclerviewitemtouchhelperswipe.SwipeUtil.SwipeUtil
+import com.balivo.recyclerviewitemtouchhelperswipe.SwipeUtil.SwipeCallback
 
 import java.util.ArrayList
+import android.app.AlertDialog
+import android.graphics.Color
+import com.balivo.recyclerviewitemtouchhelperswipe.SwipeUtil.SimpleSwipeCallback
+import com.balivo.recyclerviewitemtouchhelperswipe.SwipeUtil.SwipeExtendCallback
 
 
 /**
@@ -54,29 +59,59 @@ class MainActivityFragment : Fragment() {
 
     private fun setSwipeForRecyclerView() {
 
-        val swipeHelper = object : SwipeUtil(0, ItemTouchHelper.LEFT, activity) {
+        val swipeHelper2 = object :
+                SwipeExtendCallback(
+                        ItemTouchHelper.START or ItemTouchHelper.END,
+                        requireContext())
+        {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                val swipedPosition = viewHolder.adapterPosition
+                val position = viewHolder.adapterPosition
                 val adapter = mRecyclerView!!.adapter as RVAdapter
-                adapter.pendingRemoval(swipedPosition)
-            }
 
-            override fun getSwipeDirs(recyclerView: RecyclerView?, viewHolder: RecyclerView.ViewHolder?): Int {
-                val position = viewHolder!!.adapterPosition
-                val adapter = mRecyclerView!!.adapter as RVAdapter
-                return if (adapter.isPendingRemoval(position)) {
-                    0
-                } else super.getSwipeDirs(recyclerView, viewHolder)
+                if (direction == ItemTouchHelper.START || direction == ItemTouchHelper.END) {
+                    val builder = AlertDialog.Builder(this@MainActivityFragment.context)
+                    builder.setMessage("Are you sure you want to remove this service form shopping cart?")
+                            .setCancelable(true)
+                            .setPositiveButton("Yes", { dialog, id ->
+                                adapter.pendingRemoval(position)
+                                dialog.cancel()
+                            })
+                            .setNegativeButton("No", { dialog, id ->
+                                adapter.notifyDataSetChanged()
+                                dialog.cancel()
+                            })
+                    val alert = builder.create()
+                    alert.show()
+                } else if (direction == ItemTouchHelper.ANIMATION_TYPE_SWIPE_CANCEL) {
+                    adapter.notifyDataSetChanged()
+                }
             }
         }
+        swipeHelper2.withSwipeAction(ContextCompat.getDrawable(requireContext(), R.drawable.ic_delete_black_24dp)!!,
+                "Delete",
+                Color.RED,
+                0.3f,
+                object : SwipeExtendCallback.ItemSwipeCallback {
+                    override fun itemSwiped(position: Int, direction: Int) {
+                        val adapter = mRecyclerView!!.adapter as RVAdapter
+                        adapter.remove(position)
+                    }
+                })
 
-        val mItemTouchHelper = ItemTouchHelper(swipeHelper)
-        mItemTouchHelper.attachToRecyclerView(mRecyclerView)
+        val swipeCallback = object : SimpleSwipeCallback.ItemSwipeCallback {
+            override fun itemSwiped(position: Int, direction: Int) {
+                (mRecyclerView!!.adapter as RVAdapter).pendingRemoval(position)
+            }
+        }
+        val simpleCallback = SimpleSwipeCallback(swipeCallback)
+                .withBackgroundSwipeLeft(Color.RED)
+                .withBackgroundSwipeRight(Color.RED)
+                .withLeaveBehindSwipeLeft(ContextCompat.getDrawable(requireContext(), android.R.drawable.ic_menu_delete))
+                .withLeaveBehindSwipeLeft(ContextCompat.getDrawable(requireContext(), android.R.drawable.ic_menu_add))
 
-        //set swipe label
-        swipeHelper.leftSwipeLable="Archive"
-        //set swipe background-Color
-        swipeHelper.leftcolorCode=ContextCompat.getColor(activity!!, R.color.swipebg)
+
+        ItemTouchHelper(swipeHelper2).attachToRecyclerView(mRecyclerView)
+        //ItemTouchHelper(simpleCallback).attachToRecyclerView(mRecyclerView)
 
     }
 }
